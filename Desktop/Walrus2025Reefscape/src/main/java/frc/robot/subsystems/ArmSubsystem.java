@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
@@ -15,7 +16,10 @@ public class ArmSubsystem extends SubsystemBase {
   //public SparkFlex m_GrabberMotor = new SparkFlex(10, MotorType.kBrushless);
   public TalonFX m_GrabberMotor = new TalonFX(10);
   /** Creates a new ArmSubsystem. */
-  public ArmSubsystem() {}
+  
+  public ArmSubsystem() {
+    m_GrabberMotor.setNeutralMode(NeutralModeValue.Brake);
+  }
 
   @Override
   public void periodic() {

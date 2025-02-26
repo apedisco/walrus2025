@@ -18,7 +18,7 @@ public class armPIDCommandBallShoot extends Command {
   private double out;
   private double setpoint;
   private double P;
-  private double D;
+ // private double D;
   private double engagetime;
   private double timeTop;
   private double timeBottom;
@@ -33,15 +33,16 @@ public class armPIDCommandBallShoot extends Command {
   @Override
   public void initialize() {
     engagetime = System.currentTimeMillis();
-    setpoint = .57;
-    P = 1.5;
-    D = 0;}
+    setpoint = .85;
+    P = 1.0;
+   // D = 0;
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     armEncoderValue = Robot.armEncoder.get();
-    if( armEncoderValue < .55 && armEncoderValue > .59){
+    if((armEncoderValue < .72 || armEncoderValue > .78)){
      System.out.println("armPID Running");
     armEncoderValue = Robot.armEncoder.get();
     armEncoderValueTop = Robot.armEncoder.get();
@@ -53,7 +54,7 @@ public class armPIDCommandBallShoot extends Command {
     armEncoderValueBottom = Robot.armEncoder.get();
     timeBottom = (System.currentTimeMillis()-engagetime)/1000;
     }
-    if( armEncoderValue > .55 && armEncoderValue < .59){
+    if( armEncoderValue > .72 && armEncoderValue < .78){
       m_ArmSubsystem.m_GrabberMotor.set(.4);
       System.out.println("armPID Running");
      armEncoderValue = Robot.armEncoder.get();
@@ -67,7 +68,7 @@ public class armPIDCommandBallShoot extends Command {
      timeBottom = (System.currentTimeMillis()-engagetime)/1000;
      }
     SmartDashboard.putNumber("P output", ((setpoint - ((armEncoderValue)/1000)) * P));
-    SmartDashboard.putNumber("D output",(D * ((armEncoderValueBottom)-(armEncoderValueTop))/(timeBottom - timeTop))) ;
+    //SmartDashboard.putNumber("D output",(D * ((armEncoderValueBottom)-(armEncoderValueTop))/(timeBottom - timeTop))) ;
     SmartDashboard.putNumber("Arm Encoder", armEncoderValue);
     SmartDashboard.putNumber("Power out", out);
     SmartDashboard.putNumber("Timer", ((System.currentTimeMillis()-engagetime)/1000));
@@ -78,6 +79,7 @@ public class armPIDCommandBallShoot extends Command {
   @Override
   public void end(boolean interrupted) {
     m_ArmSubsystem.m_ArmMotor.set(0);
+    m_ArmSubsystem.m_GrabberMotor.set(0);
   }
 
   // Returns true when the command should end.

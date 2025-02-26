@@ -34,7 +34,7 @@ public class armPIDCommandBallBack extends Command {
   public void initialize() {
     engagetime = System.currentTimeMillis();
     setpoint = .39;
-    P = 0.5;
+    P = 0.4;
     D = 0;
   }
 
@@ -65,7 +65,7 @@ public class armPIDCommandBallBack extends Command {
   @Override
   public void end(boolean interrupted) {
     m_ArmSubsystem.m_ArmMotor.set(0);
-    m_ArmSubsystem.m_GrabberMotor.set(0);
+    m_ArmSubsystem.m_GrabberMotor.set(-0.03);
   }
 
   // Returns true when the command should end.

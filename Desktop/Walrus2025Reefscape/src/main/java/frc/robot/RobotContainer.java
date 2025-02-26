@@ -8,30 +8,41 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.PointWheelsAt;
+import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.armTestCommand;
-import frc.robot.commands.armTestCommand2;
-import frc.robot.commands.elevatorCommandTest;
-import frc.robot.commands.theLebron;
+import frc.robot.autoCommands.L3ScoreCommandAuto;
+import frc.robot.autoCommands.driveSequentialCommand;
+import frc.robot.autoCommands.reefLineupRightCommandAuto;
+import frc.robot.commands.L_ScoreCommands.L1ScoreCommand;
 import frc.robot.commands.L_ScoreCommands.L2ScoreCommand;
 import frc.robot.commands.L_ScoreCommands.L3ScoreCommand;
 import frc.robot.commands.L_ScoreCommands.L4ScoreCommand;
-import frc.robot.commands.armPIDCommands.armPIDCommand;
+import frc.robot.commands.TestCommands.armTestCommand;
+import frc.robot.commands.TestCommands.armTestCommand2;
+import frc.robot.commands.TestCommands.elevatorCommandTest;
+import frc.robot.commands.TestCommands.theLebron;
+import frc.robot.commands.armPIDCommands.armPIDIntakeCommand;
 import frc.robot.commands.armPIDCommands.armPIDCommandBall;
 import frc.robot.commands.armPIDCommands.armPIDCommandBallBack;
+import frc.robot.commands.armPIDCommands.armPIDCommandBallGround;
 import frc.robot.commands.armPIDCommands.armPIDCommandBallShoot;
-import frc.robot.commands.reefLineupCommands.NoteChaseCommand;
-import frc.robot.commands.reefLineupCommands.NoteOffsetCommand;
-import frc.robot.commands.reefLineupCommands.TeleReefLinup;
+import frc.robot.commands.armPIDCommands.ballL3Command;
+import frc.robot.commands.reefLineupCommands.reefLineupLeftCommand;
+import frc.robot.commands.reefLineupCommands.reeflineupPigeonCommand;
+import frc.robot.commands.reefLineupCommands.reefLineupRightCommand;
+import frc.robot.commands.reefLineupCommands.reefLinupLeftCommandTEST;
+import frc.robot.commands.reefLineupCommands.reefLinupRightCommandTEST;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -39,7 +50,7 @@ import frc.robot.subsystems.ElevatorSubsystem;
 
 public class RobotContainer {
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = RotationsPerSecond.of(0.1).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity .75
+    private double MaxAngularRate = RotationsPerSecond.of(.4).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity .75
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -52,7 +63,7 @@ public class RobotContainer {
 
     private final CommandJoystick m_DriveJoystick = new CommandJoystick(0);
     private final Joystick m_ElevatorJoystick = new Joystick(1);
-    private final Joystick m_TestJoystick = new Joystick(2);
+    // private final Joystick m_TestJoystick = new Joystick(2);
     private final Joystick m_ButtonPanel = new Joystick(3);
 
     public final ArmSubsystem m_ArmSubsystem = new ArmSubsystem();
@@ -60,46 +71,86 @@ public class RobotContainer {
     public final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
 
     public RobotContainer() {
+
+         NamedCommands.registerCommand("L3ScoreCommandAuto", new L3ScoreCommandAuto(m_ArmSubsystem, m_ElevatorSubsystem));
+         NamedCommands.registerCommand("reefLineupRightCommand", new reefLineupRightCommandAuto(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
+   
+         System.out.println("running");
+        
+
+         if(m_DriveJoystick.button(8).getAsBoolean() ){
+             System.out.println("button_pressed");
+         };
+         
+
         configureBindings();
         //Creates the Buttons for the Elevator Joystick
-         final JoystickButton elevator1Button = new JoystickButton(m_ElevatorJoystick, 1);
+        //  final JoystickButton elevator1Button = new JoystickButton(m_ElevatorJoystick, 1);
 
         // Creates the Button for the Test Joystick
-         final JoystickButton test1Button = new JoystickButton(m_TestJoystick, 1);
-         final JoystickButton test2Button = new JoystickButton(m_TestJoystick, 2);
-         final JoystickButton test3Button = new JoystickButton(m_TestJoystick, 3);
-         final JoystickButton test4Button = new JoystickButton(m_TestJoystick, 4);
-         final JoystickButton test5Button = new JoystickButton(m_TestJoystick, 5);
-         final JoystickButton test6Button = new JoystickButton(m_TestJoystick, 6);
-         final JoystickButton test7Button = new JoystickButton(m_TestJoystick, 7);
-         final JoystickButton test8Button = new JoystickButton(m_TestJoystick, 8);
-         final JoystickButton test9Button = new JoystickButton(m_TestJoystick, 9);
-         final JoystickButton test10Button = new JoystickButton(m_TestJoystick, 10);
-         final JoystickButton test11Button = new JoystickButton(m_TestJoystick, 11);
+        //  final JoystickButton test1Button = new JoystickButton(m_TestJoystick, 1);
+        //  final JoystickButton test2Button = new JoystickButton(m_TestJoystick, 2);
+        //  final JoystickButton test3Button = new JoystickButton(m_TestJoystick, 3);
+        //  final JoystickButton test4Button = new JoystickButton(m_TestJoystick, 4);
+        //  final JoystickButton test5Button = new JoystickButton(m_TestJoystick, 5);
+        //  final JoystickButton test6Button = new JoystickButton(m_TestJoystick, 6);
+        //  final JoystickButton test7Button = new JoystickButton(m_TestJoystick, 7);
+        //  final JoystickButton test8Button = new JoystickButton(m_TestJoystick, 8);
+        //  final JoystickButton test9Button = new JoystickButton(m_TestJoystick, 9);
+        //  final JoystickButton test10Button = new JoystickButton(m_TestJoystick, 10);
+        //  final JoystickButton test11Button = new JoystickButton(m_TestJoystick, 11);
 
          //Creates the Buttons for the Button Panel
          final JoystickButton panel1Button = new JoystickButton(m_ButtonPanel, 1);
+         final JoystickButton panel2Button = new JoystickButton(m_ButtonPanel, 2);
+         final JoystickButton panel3Button = new JoystickButton(m_ButtonPanel, 3);
+         final JoystickButton panel4Button = new JoystickButton(m_ButtonPanel, 4);
          final JoystickButton panel5Button = new JoystickButton(m_ButtonPanel, 5);
          final JoystickButton panel6Button = new JoystickButton(m_ButtonPanel, 6);
          final JoystickButton panel7Button = new JoystickButton(m_ButtonPanel, 7);
-       
+         final JoystickButton panel8Button = new JoystickButton(m_ButtonPanel, 8);
+         final JoystickButton panel9Button = new JoystickButton(m_ButtonPanel, 9);
+         final JoystickButton panel10Button = new JoystickButton(m_ButtonPanel, 10);
+         final JoystickButton panel11Button = new JoystickButton(m_ButtonPanel, 11);
         // Tells the m_TestJoystick Buttons What to Do.
-        test1Button.toggleOnTrue(new elevatorCommandTest(m_ElevatorSubsystem, MaxAngularRate, m_ElevatorJoystick, m_TestJoystick));
-        test3Button.toggleOnTrue(new armTestCommand(m_ArmSubsystem, m_ElevatorJoystick, m_TestJoystick));
-        test4Button.toggleOnTrue(new armTestCommand2(m_ArmSubsystem, m_ElevatorJoystick, m_TestJoystick));
-       // test7Button.onTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
-        test8Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
-        test9Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
-        test10Button.toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
+        //  test1Button.toggleOnTrue(new armPIDCommandBallGround(m_ArmSubsystem));
+        //  test2Button.toggleOnTrue(new ballL3Command(m_ArmSubsystem, m_ElevatorSubsystem));
+    //     test1Button.toggleOnTrue(new elevatorCommandTest(m_ElevatorSubsystem, MaxAngularRate, m_ElevatorJoystick, m_TestJoystick));
+    //     test3Button.toggleOnTrue(new armTestCommand(m_ArmSubsystem, m_ElevatorJoystick, m_TestJoystick));
+    //     test4Button.toggleOnTrue(new armTestCommand2(m_ArmSubsystem, m_ElevatorJoystick, m_TestJoystick));
+    //    // test7Button.onTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+    //     test8Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+    //     test9Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+    //     test10Button.toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
 
       
         // Tells the Panel Butons What to Do.
-        panel1Button.toggleOnTrue(new armPIDCommand(m_ArmSubsystem, m_ElevatorJoystick));
-        panel5Button.toggleOnTrue(new L4ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
-        panel6Button.toggleOnTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
-        panel7Button.onTrue(new L2ScoreCommand(m_ArmSubsystem).withTimeout(2).andThen(new armPIDCommand(m_ArmSubsystem, m_ButtonPanel)));
+        panel1Button.toggleOnTrue(new armPIDIntakeCommand(m_ArmSubsystem, m_ElevatorJoystick));
+        // panel2Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+        // panel3Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+        panel4Button.toggleOnTrue(new L4ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        panel5Button.toggleOnTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        panel6Button.toggleOnTrue(new L2ScoreCommand(m_ArmSubsystem));
+        panel7Button.toggleOnTrue(new L1ScoreCommand(m_ArmSubsystem));
+        panel8Button.toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
+        panel9Button.toggleOnTrue(new ballL3Command(m_ArmSubsystem, m_ElevatorSubsystem));
+        panel10Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+        panel11Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+        
+        /*
+        panel1Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDIntakeCommand(m_ArmSubsystem, m_ElevatorJoystick));
+        // panel2Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+        // panel3Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+        panel4Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L4ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        panel5Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        panel6Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L2ScoreCommand(m_ArmSubsystem));
+        panel7Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L1ScoreCommand());
+        panel8Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
+        panel9Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new ballL3Command(m_ArmSubsystem, m_ElevatorSubsystem));
+        panel10Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+        panel11Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+        */
     }
-
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -113,16 +164,17 @@ public class RobotContainer {
         );
     
         m_DriveJoystick.button(1).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric())); // Sets the Forward Direction on the Joystick to whatever the forward direction of the Pigion is currently facing
-        m_DriveJoystick.button(2).whileTrue(drivetrain.applyRequest(() -> brake));
-        m_DriveJoystick.button(3).whileTrue(new NoteOffsetCommand(drivetrain, MaxAngularRate, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
-        m_DriveJoystick.button(4).whileTrue(new TeleReefLinup(drivetrain, MaxSpeed, MaxAngularRate));
+        m_DriveJoystick.button(3).whileTrue(new reefLinupLeftCommandTEST(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
+        m_DriveJoystick.button(4).whileTrue(new reefLinupRightCommandTEST(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
+        
+        // m_DriveJoystick.button(4).whileTrue(new elevatorCommandTest(m_ElevatorSubsystem, MaxAngularRate, m_ElevatorJoystick, m_TestJoystick));
+        // m_DriveJoystick.button(8).whileTrue(new reeflineupPigeonCommand(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
 
+        // m_DriveJoystick.button(2).whileTrue(drivetrain.applyRequest(() -> brake));
         // m_DriveJoystick.button(6).whileTrue(drivetrain.applyRequest(() ->
         //     point.withModuleDirection(new Rotation2d(90))
         // ));
-        // m_DriveJoystick.button(5).whileTrue(new NoteOffsetCommand(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
-        // m_DriveJoystick.button(6).whileTrue(new NoteChaseCommand(drivetrain, MaxSpeed, MaxAngularRate));
-
+    
         // Run SysId routines when holding back/start and X/Y.
         // Note that each routine should be run exactly once in a single log.
         // m_DriveJoystick.button(4).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
@@ -138,6 +190,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return new PathPlannerAuto("Auto");
+        // return new reefLineupRightCommandAuto(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate);
     }
 }
