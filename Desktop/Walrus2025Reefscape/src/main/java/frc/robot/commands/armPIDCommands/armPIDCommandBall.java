@@ -34,14 +34,15 @@ public class armPIDCommandBall extends Command {
   @Override
   public void initialize() {
     engagetime = System.currentTimeMillis();
-    setpoint = .585;
-    P = .9;
+    setpoint = .59;//.6
+    P = 1.3;
     D = 0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    m_ArmSubsystem.m_GrabberMotor.set(0);
     System.out.println("armPID Running");
     armEncoderValue = Robot.armEncoder.get();
     armEncoderValueTop = Robot.armEncoder.get();
@@ -65,6 +66,7 @@ public class armPIDCommandBall extends Command {
   @Override
   public void end(boolean interrupted) {
     m_ArmSubsystem.m_ArmMotor.set(0);
+    m_ArmSubsystem.m_GrabberMotor.set(0);
   }
 
   // Returns true when the command should end.

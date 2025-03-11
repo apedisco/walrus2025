@@ -62,10 +62,10 @@ public class L3ScoreCommand extends Command {
 // Arm Constants
     armSetPointIntaking = .185;
     armSetPointScoring = .27;
-    elevatorSetPointScoring = (-3.55);
+    elevatorSetPointScoring = (-3.48);//-3.55
     //elevatorSetPointScoring = (-9.2);
     //setPointTransporting = .25; not used for L3, leave for now
-    armP = 3;
+    armP = 3.5;
 
 // Elevator Constants
     elevatorPAccelerate = .08;
@@ -119,7 +119,7 @@ public class L3ScoreCommand extends Command {
   // If the Elevator is under <= one rotation accelerate the motors 
       if((elevatorEncoderValue/1000) <= 1){
         if(Robot.BMasterStagingSensor.get() == false){
-         m_ArmSubsystem.m_GrabberMotor.set(-.1);
+         m_ArmSubsystem.m_GrabberMotor.set(-.3);
         }
         if(Robot.BMasterStagingSensor.get() == true){
           m_ArmSubsystem.m_GrabberMotor.set(0);
@@ -132,7 +132,7 @@ public class L3ScoreCommand extends Command {
      }
       if((elevatorEncoderValue/1000) > 1){
         if(Robot.FMasterStagingSensor.get() == false && Robot.BMasterStagingSensor.get() == false){
-          m_ArmSubsystem.m_GrabberMotor.set(-.1);
+          m_ArmSubsystem.m_GrabberMotor.set(-.3);
          }
          if(Robot.FMasterStagingSensor.get() == false && Robot.BMasterStagingSensor.get() == true){
            m_ArmSubsystem.m_GrabberMotor.set(0);
@@ -155,14 +155,14 @@ public class L3ScoreCommand extends Command {
     //  //System.out.println("Timer Start");
     //  }
     }
-    if(elevatorEncoderValue > 2900 && timerStart == true){
+    if(elevatorEncoderValue > 2700 && timerStart == true){
       check4 = true;
      engagetime = System.currentTimeMillis();
      timerStart = false;
    //System.out.println("Timer Start");
    }
 
-    if(timerStart == false && System.currentTimeMillis() - engagetime <300){
+    if(timerStart == false && System.currentTimeMillis() - engagetime <500){
       check5 = true;
       m_ArmSubsystem.m_GrabberMotor.set(.5); 
       armEncoderValue = Robot.armEncoder.get();
@@ -170,7 +170,7 @@ public class L3ScoreCommand extends Command {
        m_ArmSubsystem.m_ArmMotor.set(armOut);
       //System.out.println(System.currentTimeMillis() - engagetime);
     }
-    if(timerStart == false && System.currentTimeMillis() - engagetime >=300 && (elevatorEncoderValue/1000) > .3){
+    if(timerStart == false && System.currentTimeMillis() - engagetime >=500 && (elevatorEncoderValue/1000) > .3){
       check6 = true;
       dropCheck = false;
       m_ArmSubsystem.m_GrabberMotor.set(0); //&& System.currentTimeMillis() < 600

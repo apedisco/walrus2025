@@ -32,9 +32,9 @@ public class L2ScoreCommand extends Command {
   @Override
   public void initialize() {
     engagetime = System.currentTimeMillis();
-    setPointScoring = .27; // The point that the arm curls to when scoring
+    setPointScoring = .24; // The point that the arm curls to when scoring .3
     setPointIntaking = .19; // The point that the arm curls to when intaking
-    P = 1.75;
+    P = 3.5;
     stopCheck = true; // used to start the timer
     armStop = false; // used to shut off the setPointScoring armPID 
   }
@@ -53,28 +53,28 @@ public class L2ScoreCommand extends Command {
   }
 
 // Looks for if the arm is close to the scoring position and when true starts the timer
-  if(armEncoderValue > .25 && armEncoderValue < .3 && stopCheck){ //correct position, 1st instance
+  if(armEncoderValue > .28 && armEncoderValue < .33 && stopCheck){ //correct position, 1st instance
     System.out.println("Start the Timer");
     engagetime = System.currentTimeMillis();
     stopCheck = false;
   }
 
 // Once it is in the right postion the shoot motors turn on and shoot the coral out as long as the time is <= .3 seconds
-  if(armEncoderValue > .25 && armEncoderValue < .3 && (System.currentTimeMillis() - engagetime <= 300 )){ //correct position, shoot
-    m_ArmSubsystem.m_GrabberMotor.set(.3);
-    System.out.println("Shooting");
-  }
+//   if(armEncoderValue > .28 && armEncoderValue < .33 && (System.currentTimeMillis() - engagetime <= 300 )){ //correct position, shoot
+//     m_ArmSubsystem.m_GrabberMotor.set(.3);
+//     System.out.println("Shooting");
+//   }
 
-// Once the time is > .3 seconds the arm scoring PID shuts off and the arm Intaking PID turns on
-  if(System.currentTimeMillis() - engagetime > 300 && stopCheck == false){
-    m_ArmSubsystem.m_GrabberMotor.set(0);
-    armStop = true;
-    System.out.println("Arm PID setPositionIntaking");
-    armEncoderValue = Robot.armEncoder.get();
+// // Once the time is > .3 seconds the arm scoring PID shuts off and the arm Intaking PID turns on
+//   if(System.currentTimeMillis() - engagetime > 300 && stopCheck == false){
+//     m_ArmSubsystem.m_GrabberMotor.set(0);
+//     armStop = true;
+//     System.out.println("Arm PID setPositionIntaking");
+//     armEncoderValue = Robot.armEncoder.get();
     
-    out = ((setPointIntaking - (((armEncoderValue)))) * P); 
-    m_ArmSubsystem.m_ArmMotor.set(out);
-  }
+//     out = ((setPointIntaking - (((armEncoderValue)))) * P); 
+//     m_ArmSubsystem.m_ArmMotor.set(out);
+//   }
   }
 
   // Called once the command ends or is interrupted.

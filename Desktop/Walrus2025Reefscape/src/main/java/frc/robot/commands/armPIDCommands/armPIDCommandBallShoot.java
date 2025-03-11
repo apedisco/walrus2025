@@ -43,6 +43,7 @@ public class armPIDCommandBallShoot extends Command {
   public void execute() {
     armEncoderValue = Robot.armEncoder.get();
     if((armEncoderValue < .72 || armEncoderValue > .78)){
+      m_ArmSubsystem.m_GrabberMotor.set(-.2);
      System.out.println("armPID Running");
     armEncoderValue = Robot.armEncoder.get();
     armEncoderValueTop = Robot.armEncoder.get();

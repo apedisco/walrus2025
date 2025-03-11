@@ -10,10 +10,13 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.PointWheelsAt;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.commands.PathfindThenFollowPath;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -21,15 +24,25 @@ import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.autoCommands.IntakeCommandAuto;
+import frc.robot.autoCommands.L2ScoreCommandAuto;
 import frc.robot.autoCommands.L3ScoreCommandAuto;
-import frc.robot.autoCommands.driveSequentialCommand;
+import frc.robot.autoCommands.L4ScoreCommandAuto;
 import frc.robot.autoCommands.reefLineupRightCommandAuto;
+import frc.robot.autoCommands.reefLinupLeftCommandAuto;
+import frc.robot.commands.intakeDropCommand;
 import frc.robot.commands.L_ScoreCommands.L1ScoreCommand;
 import frc.robot.commands.L_ScoreCommands.L2ScoreCommand;
 import frc.robot.commands.L_ScoreCommands.L3ScoreCommand;
+import frc.robot.commands.L_ScoreCommands.L4Drop;
+import frc.robot.commands.L_ScoreCommands.L4Raise;
 import frc.robot.commands.L_ScoreCommands.L4ScoreCommand;
+import frc.robot.commands.L_ScoreCommands.L4Shoot;
+import frc.robot.commands.L_ScoreCommands.Test1Command;
+import frc.robot.commands.L_ScoreCommands.Test2Command;
 import frc.robot.commands.TestCommands.armTestCommand;
 import frc.robot.commands.TestCommands.armTestCommand2;
+import frc.robot.commands.TestCommands.creepModeHold;
 import frc.robot.commands.TestCommands.elevatorCommandTest;
 import frc.robot.commands.TestCommands.theLebron;
 import frc.robot.commands.armPIDCommands.armPIDIntakeCommand;
@@ -38,6 +51,7 @@ import frc.robot.commands.armPIDCommands.armPIDCommandBallBack;
 import frc.robot.commands.armPIDCommands.armPIDCommandBallGround;
 import frc.robot.commands.armPIDCommands.armPIDCommandBallShoot;
 import frc.robot.commands.armPIDCommands.ballL3Command;
+import frc.robot.commands.buttonPressOutputCommands.panel1ButtonOutput;
 import frc.robot.commands.reefLineupCommands.reefLineupLeftCommand;
 import frc.robot.commands.reefLineupCommands.reeflineupPigeonCommand;
 import frc.robot.commands.reefLineupCommands.reefLineupRightCommand;
@@ -45,11 +59,18 @@ import frc.robot.commands.reefLineupCommands.reefLinupLeftCommandTEST;
 import frc.robot.commands.reefLineupCommands.reefLinupRightCommandTEST;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.ArmSubsystem;
+import frc.robot.subsystems.ClimbSubsytem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSubsystem;
 
 public class RobotContainer {
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+
+    // private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    public static double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); //test to set creep mode
+
+
+
+
     private double MaxAngularRate = RotationsPerSecond.of(.4).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity .75
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -61,6 +82,8 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
+    SendableChooser<Command> m_chooser = new SendableChooser<>();
+
     private final CommandJoystick m_DriveJoystick = new CommandJoystick(0);
     private final Joystick m_ElevatorJoystick = new Joystick(1);
     // private final Joystick m_TestJoystick = new Joystick(2);
@@ -69,22 +92,27 @@ public class RobotContainer {
     public final ArmSubsystem m_ArmSubsystem = new ArmSubsystem();
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     public final ElevatorSubsystem m_ElevatorSubsystem = new ElevatorSubsystem();
+    public final ClimbSubsytem m_ClimbSubsytem = new ClimbSubsytem();
+    
 
     public RobotContainer() {
+        NamedCommands.registerCommand("L2ScoreCommand", new L2ScoreCommandAuto(m_ArmSubsystem).withTimeout(6));
+        NamedCommands.registerCommand("L4ScoreCommand", new L4ScoreCommandAuto(m_ArmSubsystem, m_ElevatorSubsystem).withTimeout(8));
+        NamedCommands.registerCommand("reefLineupRightCommand", new reefLineupRightCommandAuto(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate).withTimeout(8));
+        NamedCommands.registerCommand("reefLineupLeftCommand", new reefLinupLeftCommandAuto(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate).withTimeout(8));
+        NamedCommands.registerCommand("IntakeCommand", new IntakeCommandAuto(m_ArmSubsystem, m_ElevatorJoystick, this.getAutonomousCommand()));
 
-         NamedCommands.registerCommand("L3ScoreCommandAuto", new L3ScoreCommandAuto(m_ArmSubsystem, m_ElevatorSubsystem));
-         NamedCommands.registerCommand("reefLineupRightCommand", new reefLineupRightCommandAuto(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
+        SmartDashboard.putData("Autonomous", m_chooser);
+     m_chooser.setDefaultOption("Nothing", new PathPlannerAuto("Nothing"));
+     m_chooser.addOption("LSideCD_L4", new PathPlannerAuto("LSideCD_L4"));
+     m_chooser.addOption("Center_Start", new PathPlannerAuto("Center_Start"));
+     m_chooser.addOption("Left_Side_Start", new PathPlannerAuto("Left_Side_Start"));
+
+     
    
-         System.out.println("running");
-        
-
-         if(m_DriveJoystick.button(8).getAsBoolean() ){
-             System.out.println("button_pressed");
-         };
          
-
         configureBindings();
-        //Creates the Buttons for the Elevator Joystick
+        //Creates the Buttons for the Elevator Joystick%
         //  final JoystickButton elevator1Button = new JoystickButton(m_ElevatorJoystick, 1);
 
         // Creates the Button for the Test Joystick
@@ -125,31 +153,55 @@ public class RobotContainer {
 
       
         // Tells the Panel Butons What to Do.
-        panel1Button.toggleOnTrue(new armPIDIntakeCommand(m_ArmSubsystem, m_ElevatorJoystick));
-        // panel2Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
-        // panel3Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+      panel1Button.toggleOnTrue(new armPIDIntakeCommand(m_ArmSubsystem, m_ElevatorJoystick));
+       panel2Button.toggleOnTrue(new Test1Command(m_ArmSubsystem, m_ElevatorSubsystem));
+       panel3Button.toggleOnTrue(new Test2Command(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel2Button.whileTrue(new armTestCommand(m_ArmSubsystem, m_ElevatorJoystick, m_ElevatorJoystick, m_ClimbSubsytem));
+        // panel3Button.whileTrue(new armTestCommand2(m_ArmSubsystem, m_ElevatorJoystick, m_ElevatorJoystick, m_ClimbSubsytem));
+    //    panel3Button.toggleOnTrue(new theLebron(m_ArmSubsystem, m_ElevatorSubsystem));
         panel4Button.toggleOnTrue(new L4ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+
         panel5Button.toggleOnTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
         panel6Button.toggleOnTrue(new L2ScoreCommand(m_ArmSubsystem));
         panel7Button.toggleOnTrue(new L1ScoreCommand(m_ArmSubsystem));
-        panel8Button.toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
+        panel8Button.toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem)); 
         panel9Button.toggleOnTrue(new ballL3Command(m_ArmSubsystem, m_ElevatorSubsystem));
         panel10Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
         panel11Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
-        
-        /*
-        panel1Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDIntakeCommand(m_ArmSubsystem, m_ElevatorJoystick));
+        // panel11Button.toggleOnTrue(new creepModeHold());
+
+        // panel2Button.toggleOnTrue(new Test1Command(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel3Button.toggleOnTrue(new Test2Command(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel4Button.toggleOnTrue(new L4Drop(m_ArmSubsystem, m_ElevatorSubsystem));
+
+
+
+
         // panel2Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
         // panel3Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
-        panel4Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L4ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
-        panel5Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
-        panel6Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L2ScoreCommand(m_ArmSubsystem));
-        panel7Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L1ScoreCommand());
-        panel8Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
-        panel9Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new ballL3Command(m_ArmSubsystem, m_ElevatorSubsystem));
-        panel10Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
-        panel11Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
-        */
+        // panel4Button.toggleOnTrue(new L4ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel5Button.toggleOnTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel6Button.toggleOnTrue(new L2ScoreCommand(m_ArmSubsystem));
+        // panel7Button.toggleOnTrue(new L1ScoreCommand(m_ArmSubsystem));
+        // panel8Button.toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
+        // panel9Button.toggleOnTrue(new ballL3Command(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel10Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+        // panel11Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+        
+        
+        // panel1Button.whileTrue(new panel1ButtonOutput());
+        // panel1Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDIntakeCommand(m_ArmSubsystem, m_ElevatorJoystick));
+        // panel2Button.toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+        // panel3Button.toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+        // panel4Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L4ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel5Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L3ScoreCommand(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel6Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L2ScoreCommand(m_ArmSubsystem));
+        // panel7Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new L1ScoreCommand(m_ArmSubsystem));
+        // panel8Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBallShoot(m_ArmSubsystem));
+        // panel9Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new ballL3Command(m_ArmSubsystem, m_ElevatorSubsystem));
+        // panel10Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBallBack(m_ArmSubsystem));
+        // panel11Button.and(m_DriveJoystick.button(2)).toggleOnTrue(new armPIDCommandBall(m_ArmSubsystem));
+        
     }
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
@@ -164,8 +216,11 @@ public class RobotContainer {
         );
     
         m_DriveJoystick.button(1).onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric())); // Sets the Forward Direction on the Joystick to whatever the forward direction of the Pigion is currently facing
-        m_DriveJoystick.button(3).whileTrue(new reefLinupLeftCommandTEST(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
-        m_DriveJoystick.button(4).whileTrue(new reefLinupRightCommandTEST(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
+        m_DriveJoystick.button(3).whileTrue(new reefLineupLeftCommand(drivetrain, MaxAngularRate, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
+        m_DriveJoystick.button(4).whileTrue(new reefLineupRightCommand(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
+        m_DriveJoystick.button(5).whileTrue(new armTestCommand(m_ArmSubsystem, m_ElevatorJoystick, m_ElevatorJoystick, m_ClimbSubsytem));
+        m_DriveJoystick.button(6).whileTrue(new armTestCommand2(m_ArmSubsystem, m_ElevatorJoystick, m_ElevatorJoystick, m_ClimbSubsytem));
+        m_DriveJoystick.button(8).whileTrue(new intakeDropCommand(m_ClimbSubsytem));
         
         // m_DriveJoystick.button(4).whileTrue(new elevatorCommandTest(m_ElevatorSubsystem, MaxAngularRate, m_ElevatorJoystick, m_TestJoystick));
         // m_DriveJoystick.button(8).whileTrue(new reeflineupPigeonCommand(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate));
@@ -179,8 +234,8 @@ public class RobotContainer {
         // Note that each routine should be run exactly once in a single log.
         // m_DriveJoystick.button(4).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         // m_DriveJoystick.button(5).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        m_DriveJoystick.button(6).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        m_DriveJoystick.button(7).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        // m_DriveJoystick.button(6).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        // m_DriveJoystick.button(7).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // reset the field-centric heading on left bumper press
         
@@ -190,7 +245,9 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return new PathPlannerAuto("Auto");
-        // return new reefLineupRightCommandAuto(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate);
+        // return new L4ScoreCommandAuto(m_ArmSubsystem, m_ElevatorSubsystem);
+       return m_chooser.getSelected();
+       // return new PathPlannerAuto("Auto");
+        //return new reefLineupRightCommandAuto(drivetrain, MaxAngularRate, MaxAngularRate, MaxSpeed, MaxAngularRate);
     }
 }

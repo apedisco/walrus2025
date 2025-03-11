@@ -7,6 +7,7 @@ package frc.robot;
 import java.lang.reflect.Array;
 import java.util.concurrent.Flow.Subscriber;
 
+import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.revrobotics.jni.DistanceSensorJNIWrapper;
 
@@ -38,25 +39,26 @@ public class Robot extends TimedRobot {
 
   private Pigeon2 m_Pigeon2 = new Pigeon2(0);
 
-  public DoubleLogEntry motor1Position;
+ // public DoubleLogEntry motor1Position;
 
   private final RobotContainer m_robotContainer;
   ArmSubsystem m_ArmSubsystem;
   ElevatorSubsystem m_ElevatorSubsystem;
 
-  public double l_ATag;
-  public double r_ATag;
-  public double r_limeLightMountingDegrees = 1;
-  public double r_limeLightHeightOffset = 9.8125;
-  public double goalHeightInches = 12.125;
-  public double r_angleToGoalDegrees;
-  public double r_angleToGoalRadians;
-  public double r_distanceFromLimelightToGoalInches;
-  public double l_angleToGoalDegrees;
-  public double l_angleToGoalRadians;
-  public double l_distanceFromLimelightToGoalInches;
-  public double l_limeLightHeightOffset = 9.6125;
-  public double l_limeLightMountingDegrees = 7.5;
+  private String Button = "None";
+ private double l_ATag;
+ private double r_ATag;
+ private double r_limeLightMountingDegrees = 1;
+ private double r_limeLightHeightOffset = 9.8125;
+ private double goalHeightInches = 12.125;
+ private double r_angleToGoalDegrees;
+ private double r_angleToGoalRadians;
+ private double r_distanceFromLimelightToGoalInches;
+ private double l_angleToGoalDegrees;
+ private double l_angleToGoalRadians;
+ private double l_distanceFromLimelightToGoalInches;
+ private double l_limeLightHeightOffset = 9.6125;
+ private double l_limeLightMountingDegrees = 7.5;
   private double absoluteRotation;
   private double masterRotation;
 
@@ -66,8 +68,8 @@ public class Robot extends TimedRobot {
   public static DigitalInput input3 = new DigitalInput(3);
   public static DigitalInput FMasterStagingSensor = new DigitalInput(4);
   public static DigitalInput input5 = new DigitalInput(5);
-  public static DigitalInput BMasterStagingSensor = new DigitalInput(6);
-  public static DigitalInput input7 = new DigitalInput(7);
+  public static DigitalInput BMasterStagingSensor = new DigitalInput(7);
+  public static DigitalInput input7 = new DigitalInput(6);
   public static DigitalInput input8 = new DigitalInput(8);
   public static DigitalInput input9 = new DigitalInput(9);
 
@@ -82,13 +84,14 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     m_robotContainer = new RobotContainer();
+    SignalLogger.setPath("/Logs/");
     DataLogManager.start();
     DriverStation.startDataLog(DataLogManager.getLog());
-    DataLog log = DataLogManager.getLog();
+    //DataLog log = DataLogManager.getLog();
 
 
     CameraServer.startAutomaticCapture();
-    motor1Position = new DoubleLogEntry(log, "Motor 1 Encoder position");
+   // motor1Position = new DoubleLogEntry(log, "Motor 1 Encoder position");
    
 
   }
@@ -123,11 +126,11 @@ public class Robot extends TimedRobot {
   double r_aid = r_tid.getDouble(0);
   double[] r_rotation = r_cam3d.getDoubleArray(new double[6]);
   r_ATag = r_tv.getDouble(0);
-  SmartDashboard.putNumber("r_X-Offset", r_sx);
-  SmartDashboard.putNumber("r_ATag Detector", r_ATag);
-  SmartDashboard.putNumber("r_ATag Area", r_area);
-  SmartDashboard.putNumber("r_rotation", r_rotation[4]);
-  SmartDashboard.putNumber("r_ATag ID", r_aid);
+  // SmartDashboard.putNumber("r_X-Offset", r_sx);
+  // SmartDashboard.putNumber("r_ATag Detector", r_ATag);
+  // SmartDashboard.putNumber("r_ATag Area", r_area);
+  // SmartDashboard.putNumber("r_rotation", r_rotation[4]);
+  // SmartDashboard.putNumber("r_ATag ID", r_aid);
   SmartDashboard.putBoolean("new_sensor", BMasterStagingSensor.get());
 
   r_angleToGoalDegrees = r_limeLightMountingDegrees + r_sy;
@@ -155,11 +158,11 @@ public class Robot extends TimedRobot {
   double l_aid = l_tid.getDouble(0);
   double[] l_rotation = l_cam3d.getDoubleArray(new double[6]);
   l_ATag = l_tv.getDouble(0);
-  SmartDashboard.putNumber("l_ATag Detector", l_ATag);
-  SmartDashboard.putNumber("l_X-Offset", l_sx);
-  SmartDashboard.putNumber("ATag Area", l_area);
-  SmartDashboard.putNumber("l_rotation", l_rotation[4]);
-  SmartDashboard.putNumber("l_ATag ID", l_aid);
+  // SmartDashboard.putNumber("l_ATag Detector", l_ATag);
+  // SmartDashboard.putNumber("l_X-Offset", l_sx);
+  // SmartDashboard.putNumber("ATag Area", l_area);
+  // SmartDashboard.putNumber("l_rotation", l_rotation[4]);
+  // SmartDashboard.putNumber("l_ATag ID", l_aid);
 
   l_angleToGoalDegrees = l_limeLightMountingDegrees + l_sy;
   l_angleToGoalRadians = l_angleToGoalDegrees * (3.14159 / 180);
@@ -198,6 +201,7 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    SmartDashboard.putString("Button Pressed", Button);
   }
 
   @Override
